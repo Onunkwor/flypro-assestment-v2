@@ -27,6 +27,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		utils.ValidationErrorResponse(c, formatted)
 		return
 	}
+	request.Sanitize()
 	user := models.User{
 		Email: request.Email,
 		Name:  request.Name,
