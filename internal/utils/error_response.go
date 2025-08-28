@@ -25,6 +25,8 @@ func FormatValidationError(err error) map[string]string {
 				out[field] = fmt.Sprintf("%s must be at most %s characters long", field, fe.Param())
 			case "len":
 				out[field] = fmt.Sprintf("%s must be exactly %s characters long", field, fe.Param())
+			case "oneof":
+				out[field] = fmt.Sprintf("%s must be one of the following: %s", field, fe.Param())
 			default:
 				out[field] = fmt.Sprintf("%s is not valid (%s)", field, fe.Tag())
 			}
