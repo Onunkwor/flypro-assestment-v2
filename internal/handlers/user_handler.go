@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"context"
 	"net/http"
 	"strconv"
 
@@ -46,12 +45,12 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 
 func (h *UserHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
-	id, err := strconv.Atoi(idParam)
-	if err != nil || id <= 0 {
+	id, err := strconv.ParseUint(idParam, 10, 32)
+	if err != nil {
 		utils.BadRequestResponse(c, "invalid user ID")
 		return
 	}
-	response, err := h.service.GetUserByID(context.Background(), uint(id))
+	response, err := h.service.GetUserByID(c.Request.Context(), uint(id))
 	if err != nil {
 		if err == services.ErrUserNotFound {
 			utils.NotFoundResponse(c, "user not found")

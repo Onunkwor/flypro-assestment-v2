@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/onunkwor/flypro-assestment-v2/internal/models"
@@ -48,6 +49,9 @@ func (s *userSrv) GetUserByID(ctx context.Context, id uint) (*models.User, error
 			var user models.User
 			if unmarshalErr := json.Unmarshal([]byte(val), &user); unmarshalErr == nil {
 				return &user, nil
+			} else {
+				log.Printf("failed to unmarshal user from cache: %v (key=%s)", unmarshalErr, key)
+				_ = s.redis.Del(ctx, key).Err()
 			}
 		} else if err != redis.Nil {
 			return nil, err
@@ -60,9 +64,13 @@ func (s *userSrv) GetUserByID(ctx context.Context, id uint) (*models.User, error
 		}
 		return nil, err
 	}
-	bytes, _ := json.Marshal(user)
-	if s.redis != nil {
-		s.redis.Set(ctx, key, bytes, time.Hour)
+	bytes, err := json.Marshal(user)
+	if err != nil {
+		log.Printf("failed to marshal user for cache: %v (key=%s)", err, key)
+	} else if s.redis != nil {
+		if err := s.redis.Set(ctx, key, bytes, time.Hour).Err(); err != nil {
+			log.Printf("failed to set user in cache: %v (key=%s)", err, key)
+		}
 	}
 	return user, nil
 }
