@@ -9,3 +9,6 @@ migrate-down:
 
 migrate-status:
 	goose -dir $(MIGRATIONS_DIR) postgres $(DB_URL) status
+
+test:
+	go test ./... -v -cover
