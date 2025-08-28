@@ -12,20 +12,28 @@ import (
 
 var ErrCurrencyConversionFailed = errors.New("currency conversion failed")
 
-type ExpenseService struct {
+type ExpenseService interface {
+	CreateExpense(ctx context.Context, expense *models.Expense) error
+	GetExpenseByID(ctx context.Context, id uint) (*models.Expense, error)
+	UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error
+	DeleteExpense(ctx context.Context, id uint) error
+	GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error)
+}
+
+type expenseSrv struct {
 	repo        repository.ExpenseRepository
 	redis       *redis.Client
 	currencySvc CurrencyConverter
 }
 
-func NewExpenseService(redis *redis.Client, currencySvc CurrencyConverter, repo repository.ExpenseRepository) *ExpenseService {
-	return &ExpenseService{repo: repo, redis: redis, currencySvc: currencySvc}
+func NewExpenseService(redis *redis.Client, currencySvc CurrencyConverter, repo repository.ExpenseRepository) ExpenseService {
+	return &expenseSrv{repo: repo, redis: redis, currencySvc: currencySvc}
 }
 
-func (s *ExpenseService) CreateExpense(ctx context.Context, expense *models.Expense) error {
+func (s *expenseSrv) CreateExpense(ctx context.Context, expense *models.Expense) error {
 	currency := strings.ToUpper(expense.Currency)
 
-	if currency == "USD" {
+	if expense.Currency == "USD" {
 
 		expense.AmountUSD = expense.Amount
 		expense.ExchangeRate = 1.0
@@ -41,11 +49,11 @@ func (s *ExpenseService) CreateExpense(ctx context.Context, expense *models.Expe
 	return s.repo.Create(ctx, expense)
 }
 
-func (s *ExpenseService) GetExpenseByID(ctx context.Context, id uint) (*models.Expense, error) {
+func (s *expenseSrv) GetExpenseByID(ctx context.Context, id uint) (*models.Expense, error) {
 	return s.repo.GetExpenseByID(ctx, id)
 }
 
-func (s *ExpenseService) UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error {
+func (s *expenseSrv) UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error {
 	currency := strings.ToUpper(expense.Currency)
 
 	if currency == "USD" {
@@ -63,10 +71,10 @@ func (s *ExpenseService) UpdateExpense(ctx context.Context, id uint, expense *mo
 	return s.repo.UpdateExpense(ctx, id, expense)
 }
 
-func (s *ExpenseService) DeleteExpense(ctx context.Context, id uint) error {
+func (s *expenseSrv) DeleteExpense(ctx context.Context, id uint) error {
 	return s.repo.DeleteExpense(ctx, id)
 }
 
-func (s *ExpenseService) GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error) {
+func (s *expenseSrv) GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error) {
 	return s.repo.GetExpenses(ctx, filters, offset, limit)
 }
