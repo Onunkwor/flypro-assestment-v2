@@ -21,4 +21,5 @@ func ConnectRedis() {
 	if err != nil {
 		log.Fatalf("failed to connect to redis: %v", err)
 	}
+	log.Println("✅ Successfully connected to Redis")
 }

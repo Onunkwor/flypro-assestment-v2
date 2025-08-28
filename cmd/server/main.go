@@ -5,6 +5,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/onunkwor/flypro-assestment-v2/internal/config"
+	"github.com/onunkwor/flypro-assestment-v2/internal/routes"
 )
 
 func init() {
@@ -13,10 +14,13 @@ func init() {
 	if err != nil {
 		log.Fatal("Failed to connect to database:", err)
 	}
+	config.ConnectRedis()
 }
 
 func main() {
 	router := gin.Default()
+	router.Use(gin.Recovery())
+	routes.RegisterUserRoutes(router)
 	port, err := config.Getenv("PORT")
 	if err != nil {
 		log.Fatal("Failed to get PORT:", err)
