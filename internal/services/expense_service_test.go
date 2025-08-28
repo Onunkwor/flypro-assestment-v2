@@ -69,3 +69,38 @@ func TestCreateExpense_Success(t *testing.T) {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }
+func TestUpdateExpense_Success(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	mockRepo := mocks.NewMockExpenseRepository(ctrl)
+	mockCurrency := mocks.NewMockCurrencyConverter(ctrl)
+
+	srv := services.NewExpenseService(nil, mockCurrency, mockRepo)
+
+	exp := &models.Expense{
+		UserID:   1,
+		Amount:   100,
+		Currency: "NGN",
+	}
+
+	mockCurrency.EXPECT().
+		Convert(gomock.Any(), exp.Amount, "NGN", "USD").
+		Return(0.26, 0.0026, nil)
+
+	mockRepo.EXPECT().
+		UpdateExpense(gomock.Any(), uint(1), gomock.AssignableToTypeOf(&models.Expense{})).
+		DoAndReturn(func(ctx context.Context, id uint, e *models.Expense) error {
+			if e.AmountUSD != 0.26 {
+				t.Fatalf("expected AmountUSD 0.26, got %v", e.AmountUSD)
+			}
+			if e.ExchangeRate != 0.0026 {
+				t.Fatalf("expected ExchangeRate 0.0026, got %v", e.ExchangeRate)
+			}
+			return nil
+		})
+
+	if err := srv.UpdateExpense(context.Background(), uint(1), exp); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+}
