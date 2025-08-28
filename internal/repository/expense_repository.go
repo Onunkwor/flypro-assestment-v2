@@ -14,8 +14,8 @@ type ExpenseRepository interface {
 	Create(ctx context.Context, expense *models.Expense) error
 	GetExpenseByID(ctx context.Context, id uint) (*models.Expense, error)
 	GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error)
-	UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error
-	DeleteExpense(ctx context.Context, id uint) error
+	UpdateExpense(ctx context.Context, id uint, expense *models.Expense, userId uint) error
+	DeleteExpense(ctx context.Context, id uint, userId uint) error
 }
 
 type expenseRepo struct {
@@ -59,8 +59,8 @@ func (r *expenseRepo) GetExpenses(ctx context.Context, filters map[string]interf
 	return expenses, nil
 }
 
-func (r *expenseRepo) UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error {
-	result := r.db.WithContext(ctx).Model(&models.Expense{}).Where("id = ?", id).Updates(expense)
+func (r *expenseRepo) UpdateExpense(ctx context.Context, id uint, expense *models.Expense, userId uint) error {
+	result := r.db.WithContext(ctx).Model(&models.Expense{}).Where("id = ? AND user_id = ?", id, userId).Updates(expense)
 	if result.Error != nil {
 		return result.Error
 	}
@@ -70,8 +70,11 @@ func (r *expenseRepo) UpdateExpense(ctx context.Context, id uint, expense *model
 	return nil
 }
 
-func (r *expenseRepo) DeleteExpense(ctx context.Context, id uint) error {
-	result := r.db.WithContext(ctx).Delete(&models.Expense{}, id)
+func (r *expenseRepo) DeleteExpense(ctx context.Context, id uint, userId uint) error {
+	result := r.db.WithContext(ctx).
+		Where("id = ? AND user_id = ?", id, userId).
+		Delete(&models.Expense{})
+
 	if result.Error != nil {
 		return result.Error
 	}

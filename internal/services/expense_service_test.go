@@ -89,8 +89,8 @@ func TestUpdateExpense_Success(t *testing.T) {
 		Return(0.26, 0.0026, nil)
 
 	mockRepo.EXPECT().
-		UpdateExpense(gomock.Any(), uint(1), gomock.AssignableToTypeOf(&models.Expense{})).
-		DoAndReturn(func(ctx context.Context, id uint, e *models.Expense) error {
+		UpdateExpense(gomock.Any(), uint(1), gomock.AssignableToTypeOf(&models.Expense{}), uint(1)).
+		DoAndReturn(func(ctx context.Context, id uint, e *models.Expense, userId uint) error {
 			if e.AmountUSD != 0.26 {
 				t.Fatalf("expected AmountUSD 0.26, got %v", e.AmountUSD)
 			}
@@ -100,7 +100,7 @@ func TestUpdateExpense_Success(t *testing.T) {
 			return nil
 		})
 
-	if err := srv.UpdateExpense(context.Background(), uint(1), exp); err != nil {
+	if err := srv.UpdateExpense(context.Background(), uint(1), exp, uint(1)); err != nil {
 		t.Fatalf("unexpected error: %v", err)
 	}
 }

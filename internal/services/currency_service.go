@@ -54,13 +54,14 @@ func (s *CurrencyService) Convert(ctx context.Context, amount float64, from, to 
 	}
 
 	var data struct {
-		Rates map[string]float64 `json:"rates"`
+		ConversionRates map[string]float64 `json:"conversion_rates"`
 	}
 	if err := json.NewDecoder(resp.Body).Decode(&data); err != nil {
 		return 0, 0, err
 	}
 
-	rate, ok := data.Rates[to]
+	rate, ok := data.ConversionRates[to]
+
 	if !ok {
 		return 0, 0, fmt.Errorf("unsupported currency: %s", to)
 	}

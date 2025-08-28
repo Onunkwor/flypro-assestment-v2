@@ -34,6 +34,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 		Amount:      request.Amount,
 		Currency:    request.Currency,
 		Description: request.Description,
+		Category:    request.Category,
 	}
 	if err := h.service.CreateExpense(c.Request.Context(), exp); err != nil {
 		utils.InternalServerErrorResponse(c, err)
@@ -78,14 +79,23 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid expense ID")
 		return
 	}
-
+	var userID uint
+	if userIDParam := c.Query("user_id"); userIDParam != "" {
+		uid, err := strconv.ParseUint(userIDParam, 10, 64)
+		if err != nil {
+			utils.BadRequestResponse(c, "Invalid user ID")
+			return
+		}
+		userID = uint(uid)
+	}
 	expense := &models.Expense{
 		Amount:      request.Amount,
 		Currency:    request.Currency,
 		Description: request.Description,
+		Category:    request.Category,
 	}
 
-	if err := h.service.UpdateExpense(c.Request.Context(), uint(id), expense); err != nil {
+	if err := h.service.UpdateExpense(c.Request.Context(), uint(id), expense, userID); err != nil {
 		if errors.Is(err, repository.ErrExpenseNotFound) {
 			utils.NotFoundResponse(c, "Expense not found")
 			return
@@ -104,8 +114,16 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 		utils.BadRequestResponse(c, "Invalid expense ID")
 		return
 	}
-
-	if err := h.service.DeleteExpense(c.Request.Context(), uint(id)); err != nil {
+	var userID uint
+	if userIDParam := c.Query("user_id"); userIDParam != "" {
+		uid, err := strconv.ParseUint(userIDParam, 10, 64)
+		if err != nil {
+			utils.BadRequestResponse(c, "Invalid user ID")
+			return
+		}
+		userID = uint(uid)
+	}
+	if err := h.service.DeleteExpense(c.Request.Context(), uint(id), userID); err != nil {
 		if errors.Is(err, repository.ErrExpenseNotFound) {
 			utils.NotFoundResponse(c, "Expense not found")
 			return

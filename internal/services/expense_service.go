@@ -15,8 +15,8 @@ var ErrCurrencyConversionFailed = errors.New("currency conversion failed")
 type ExpenseService interface {
 	CreateExpense(ctx context.Context, expense *models.Expense) error
 	GetExpenseByID(ctx context.Context, id uint) (*models.Expense, error)
-	UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error
-	DeleteExpense(ctx context.Context, id uint) error
+	UpdateExpense(ctx context.Context, id uint, expense *models.Expense, userId uint) error
+	DeleteExpense(ctx context.Context, id uint, userId uint) error
 	GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error)
 }
 
@@ -40,7 +40,7 @@ func (s *expenseSrv) CreateExpense(ctx context.Context, expense *models.Expense)
 	} else {
 		convertedAmount, rate, err := s.currencySvc.Convert(ctx, expense.Amount, currency, "USD")
 		if err != nil {
-			return ErrCurrencyConversionFailed
+			return err
 		}
 		expense.AmountUSD = convertedAmount
 		expense.ExchangeRate = rate
@@ -53,7 +53,7 @@ func (s *expenseSrv) GetExpenseByID(ctx context.Context, id uint) (*models.Expen
 	return s.repo.GetExpenseByID(ctx, id)
 }
 
-func (s *expenseSrv) UpdateExpense(ctx context.Context, id uint, expense *models.Expense) error {
+func (s *expenseSrv) UpdateExpense(ctx context.Context, id uint, expense *models.Expense, userId uint) error {
 	currency := strings.ToUpper(expense.Currency)
 
 	if currency == "USD" {
@@ -68,11 +68,11 @@ func (s *expenseSrv) UpdateExpense(ctx context.Context, id uint, expense *models
 		expense.ExchangeRate = rate
 	}
 
-	return s.repo.UpdateExpense(ctx, id, expense)
+	return s.repo.UpdateExpense(ctx, id, expense, userId)
 }
 
-func (s *expenseSrv) DeleteExpense(ctx context.Context, id uint) error {
-	return s.repo.DeleteExpense(ctx, id)
+func (s *expenseSrv) DeleteExpense(ctx context.Context, id uint, userId uint) error {
+	return s.repo.DeleteExpense(ctx, id, userId)
 }
 
 func (s *expenseSrv) GetExpenses(ctx context.Context, filters map[string]interface{}, offset, limit int) ([]models.Expense, error) {

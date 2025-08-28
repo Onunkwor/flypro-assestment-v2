@@ -23,7 +23,7 @@ func RegisterExpenseRoutes(router *gin.Engine) {
 	expenseGroup := router.Group("api/expenses")
 	{
 		expenseGroup.POST("/", expenseHandler.CreateExpense)
-		expenseGroup.GET("/:id")
+		expenseGroup.GET("/:id", expenseHandler.GetExpenseByID)
 		expenseGroup.GET("/", expenseHandler.GetExpenses)
 		expenseGroup.PUT("/:id", expenseHandler.UpdateExpense)
 		expenseGroup.DELETE("/:id", expenseHandler.DeleteExpense)
