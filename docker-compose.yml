@@ -13,7 +13,16 @@ services:
       - ./scripts:/docker-entrypoint-initdb.d
     ports:
       - "5431:5432"
-
+  redis:
+    image: redis:7-alpine
+    container_name: flypro-backend-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: ["redis-server", "--appendonly", "yes"]
 volumes:
   db_data:
+    driver: local
+  redis_data:
     driver: local

@@ -10,7 +10,7 @@ import (
 
 func RegisterUserRoutes(router *gin.Engine) {
 	userRepo := repository.NewUserRepository(config.DB)
-	userService := services.NewUserService(userRepo)
+	userService := services.NewUserService(config.Redis, userRepo)
 	userHandler := handlers.NewUserHandler(userService)
 	userGroup := router.Group("/api/users")
 	{
