@@ -24,6 +24,8 @@ func RegisterExpenseRoutes(router *gin.Engine) {
 	{
 		expenseGroup.POST("/", expenseHandler.CreateExpense)
 		expenseGroup.GET("/:id")
-
+		expenseGroup.GET("/", expenseHandler.GetExpenses)
+		expenseGroup.PUT("/:id", expenseHandler.UpdateExpense)
+		expenseGroup.DELETE("/:id", expenseHandler.DeleteExpense)
 	}
 }
