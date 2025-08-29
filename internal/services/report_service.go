@@ -38,12 +38,9 @@ func NewReportService(r repository.ReportRepository, exp repository.ExpenseRepos
 }
 
 func (s *reportService) CreateReport(ctx context.Context, report *models.ExpenseReport) error {
-	exist, err := s.userRepo.GetUserByID(ctx, report.UserID)
+	_, err := s.userRepo.GetUserByID(ctx, report.UserID)
 	if err != nil {
 		return err
-	}
-	if exist == nil {
-		return errors.New("user does not exist")
 	}
 	return s.reportRepo.CreateReport(ctx, report)
 }
@@ -53,9 +50,6 @@ func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID
 	if err != nil {
 		return err
 	}
-	if report == nil {
-		return repository.ErrReportNotFound
-	}
 
 	if report.UserID != userID {
 		return ErrInvalidOwnership
@@ -64,9 +58,6 @@ func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID
 	expense, err := s.expenseRepo.GetExpenseByID(ctx, expenseID)
 	if err != nil {
 		return err
-	}
-	if expense == nil {
-		return repository.ErrExpenseNotFound
 	}
 
 	if expense.UserID != userID {
@@ -84,9 +75,6 @@ func (s *reportService) SubmitReport(ctx context.Context, reportID, userID uint)
 	report, err := s.reportRepo.GetExpenseReportByID(ctx, reportID)
 	if err != nil {
 		return err
-	}
-	if report == nil {
-		return repository.ErrReportNotFound
 	}
 
 	if report.UserID != userID {
