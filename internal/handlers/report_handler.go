@@ -115,7 +115,7 @@ func (h *ReportHandler) SubmitReport(c *gin.Context) {
 }
 
 func (h *ReportHandler) GetReportExpenses(c *gin.Context) {
-	userID, err := strconv.ParseUint(c.Query("userID"), 10, 64)
+	userID, err := strconv.ParseUint(c.Query("user_id"), 10, 64)
 	if err != nil || userID == 0 {
 		utils.BadRequestResponse(c, "invalid user ID")
 		return

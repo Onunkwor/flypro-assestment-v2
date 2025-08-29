@@ -22,6 +22,7 @@ func main() {
 	router.Use(gin.Recovery())
 	routes.RegisterUserRoutes(router)
 	routes.RegisterExpenseRoutes(router)
+	routes.RegisterReportRoutes(router)
 	port, err := config.Getenv("PORT")
 	if err != nil {
 		log.Fatal("Failed to get PORT:", err)
