@@ -17,6 +17,8 @@ var (
 type ReportService interface {
 	CreateReport(ctx context.Context, report *models.ExpenseReport) error
 	AddExpenseToReport(ctx context.Context, reportID, userId, expenseID uint) error
+	SubmitReport(ctx context.Context, reportID, userID uint) error
+	GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error)
 }
 
 type reportService struct {
@@ -76,4 +78,28 @@ func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID
 	}
 	return s.reportRepo.IncrementReportTotal(ctx, reportID, expense.AmountUSD)
 
+}
+
+func (s *reportService) SubmitReport(ctx context.Context, reportID, userID uint) error {
+	report, err := s.reportRepo.GetExpenseReportByID(ctx, reportID)
+	if err != nil {
+		return err
+	}
+	if report == nil {
+		return repository.ErrReportNotFound
+	}
+
+	if report.UserID != userID {
+		return ErrInvalidOwnership
+	}
+
+	if report.Status != "draft" {
+		return ErrInvalidReportState
+	}
+
+	return s.reportRepo.SubmitReport(ctx, reportID)
+}
+
+func (s *reportService) GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error) {
+	return s.reportRepo.GetReportExpenses(ctx, userID, offset, limit)
 }

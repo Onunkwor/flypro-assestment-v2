@@ -15,6 +15,8 @@ type ReportRepository interface {
 	AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error
 	GetExpenseReportByID(ctx context.Context, id uint) (*models.ExpenseReport, error)
 	IncrementReportTotal(ctx context.Context, reportID uint, amount float64) error
+	GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error)
+	SubmitReport(ctx context.Context, reportID uint) error
 }
 
 type reportRepo struct {
@@ -53,5 +55,25 @@ func (r *reportRepo) IncrementReportTotal(ctx context.Context, reportID uint, am
 		Model(&models.ExpenseReport{}).
 		Where("id = ?", reportID).
 		UpdateColumn("total", gorm.Expr("total + ?", amount)).
+		Error
+}
+
+func (r *reportRepo) GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error) {
+	var reports []models.ExpenseReport
+	err := r.db.WithContext(ctx).
+		Where("user_id = ?", userID).
+		Offset(offset).
+		Limit(limit).
+		Preload("Expenses").
+		Preload("User").
+		Find(&reports).Error
+	return reports, err
+}
+
+func (r *reportRepo) SubmitReport(ctx context.Context, reportID uint) error {
+	return r.db.WithContext(ctx).
+		Model(&models.ExpenseReport{}).
+		Where("id = ?", reportID).
+		UpdateColumn("status", "submitted").
 		Error
 }
