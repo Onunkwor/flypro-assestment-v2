@@ -1,0 +1,316 @@
+{
+	"info": {
+		"_postman_id": "4da31fba-23f0-4df0-9c65-f18961fed359",
+		"name": "flypro-assestment",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "30263979"
+	},
+	"item": [
+		{
+			"name": "create-user",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"email\": \"joe@example.com\",\r\n  \"name\": \"John Doe\"\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/users",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-user-by-id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "http://localhost:4000/api/users/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"users",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-expense",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_id\": 1,\r\n  \"amount\": 300,\r\n  \"currency\": \"NGN\",\r\n  \"category\": \"travel\",\r\n  \"description\": \"Flight to Europe\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/expenses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"expenses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-expenses",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/expenses?user_id=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"expenses"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-expense",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/expenses/1?user_id=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"expenses",
+						"1"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "update-expense",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_id\": 1, \r\n  \"amount\": 140,\r\n  \"currency\": \"EUR\",\r\n  \"category\": \"Meals\",\r\n  \"description\": \"Dinner at McDonald's\"\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/expenses/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"expenses",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "delete-expense",
+			"request": {
+				"method": "DELETE",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"user_id\": 1,\r\n  \r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/expenses/1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"expenses",
+						"1"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "create-expense-report",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"title\" : \"Monthly Report\",\r\n \"user_id\": 1\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/reports",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"reports"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "add-report-expenses",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n \"expense_id\": 1,\r\n \"user_id\": 1\r\n}"
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/reports/1/expenses",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"reports",
+						"1",
+						"expenses"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "get-reports",
+			"protocolProfileBehavior": {
+				"disableBodyPruning": true
+			},
+			"request": {
+				"method": "GET",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/reports?user_id=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"reports"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "submit-report",
+			"request": {
+				"method": "PUT",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": ""
+				},
+				"url": {
+					"raw": "http://localhost:4000/api/reports/1/submit?user_id=1",
+					"protocol": "http",
+					"host": [
+						"localhost"
+					],
+					"port": "4000",
+					"path": [
+						"api",
+						"reports",
+						"1",
+						"submit"
+					],
+					"query": [
+						{
+							"key": "user_id",
+							"value": "1"
+						}
+					]
+				}
+			},
+			"response": []
+		}
+	]
+}
