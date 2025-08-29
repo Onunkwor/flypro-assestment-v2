@@ -28,11 +28,11 @@ type reportService struct {
 	redis       *redis.Client
 }
 
-func NewReportService(r repository.ReportRepository, exp repository.ExpenseRepository, userRepo repository.UserRepository, redis *redis.Client) *reportService {
+func NewReportService(r repository.ReportRepository, e repository.ExpenseRepository, u repository.UserRepository, redis *redis.Client) *reportService {
 	return &reportService{
 		reportRepo:  r,
-		expenseRepo: exp,
-		userRepo:    userRepo,
+		expenseRepo: e,
+		userRepo:    u,
 		redis:       redis,
 	}
 }
