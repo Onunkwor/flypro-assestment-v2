@@ -26,7 +26,7 @@ internal/
 ├── middleware/             # Logging, CORS, rate limiting
 └── utils/                  # Helpers (error formatting, etc.)
 migrations/                 # Goose migration files
-tests/                      #Mock repositories
+tests/                      # Mock repositories
 docker-compose.yml          # Postgres + Redis setup
 Makefile                    # Migration & test commands
 .env                        # Environment variables

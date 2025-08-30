@@ -64,10 +64,7 @@ func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID
 		return ErrInvalidOwnership
 	}
 
-	if err := s.reportRepo.AddExpenseToReport(ctx, reportID, expense); err != nil {
-		return err
-	}
-	return s.reportRepo.IncrementReportTotal(ctx, reportID, expense.AmountUSD)
+	return s.reportRepo.AddExpenseToReportWithTotal(ctx, reportID, expense)
 
 }
 

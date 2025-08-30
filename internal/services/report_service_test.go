@@ -90,8 +90,7 @@ func TestAddExpenseToReport_Success(t *testing.T) {
 
 	mockReportRepo.EXPECT().GetExpenseReportByID(gomock.Any(), reportID).Return(report, nil)
 	mockExpenseRepo.EXPECT().GetExpenseByID(gomock.Any(), expenseID).Return(expense, nil)
-	mockReportRepo.EXPECT().AddExpenseToReport(gomock.Any(), reportID, expense).Return(nil)
-	mockReportRepo.EXPECT().IncrementReportTotal(gomock.Any(), reportID, expense.AmountUSD).Return(nil)
+	mockReportRepo.EXPECT().AddExpenseToReportWithTotal(gomock.Any(), reportID, expense).Return(nil)
 
 	err := service.AddExpenseToReport(context.Background(), reportID, userID, expenseID)
 	if err != nil {

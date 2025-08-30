@@ -12,9 +12,8 @@ var ErrReportNotFound = errors.New("report not found")
 
 type ReportRepository interface {
 	CreateReport(ctx context.Context, report *models.ExpenseReport) error
-	AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error
+	AddExpenseToReportWithTotal(ctx context.Context, reportID uint, expense *models.Expense) error
 	GetExpenseReportByID(ctx context.Context, id uint) (*models.ExpenseReport, error)
-	IncrementReportTotal(ctx context.Context, reportID uint, amount float64) error
 	GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error)
 	SubmitReport(ctx context.Context, reportID uint) error
 }
@@ -31,12 +30,24 @@ func (r *reportRepo) CreateReport(ctx context.Context, report *models.ExpenseRep
 	return r.db.WithContext(ctx).Create(report).Error
 }
 
-func (r *reportRepo) AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error {
+func (r *reportRepo) AddExpenseToReportWithTotal(ctx context.Context, reportID uint, expense *models.Expense) error {
+	return r.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 
-	return r.db.WithContext(ctx).
-		Model(&models.ExpenseReport{BaseModel: models.BaseModel{ID: reportID}}).
-		Association("Expenses").
-		Append(expense)
+		if err := tx.Model(&models.ExpenseReport{BaseModel: models.BaseModel{ID: reportID}}).
+			Association("Expenses").
+			Append(expense); err != nil {
+			return err
+		}
+		if err := tx.Model(&models.ExpenseReport{}).
+			Where("id = ?", reportID).
+			UpdateColumn("total", gorm.Expr("total + ?", expense.AmountUSD)).
+			Error; err != nil {
+			return err
+		}
+
+		return nil
+	})
+
 }
 
 func (r *reportRepo) GetExpenseReportByID(ctx context.Context, id uint) (*models.ExpenseReport, error) {
@@ -48,14 +59,6 @@ func (r *reportRepo) GetExpenseReportByID(ctx context.Context, id uint) (*models
 		return nil, err
 	}
 	return &report, nil
-}
-
-func (r *reportRepo) IncrementReportTotal(ctx context.Context, reportID uint, amount float64) error {
-	return r.db.WithContext(ctx).
-		Model(&models.ExpenseReport{}).
-		Where("id = ?", reportID).
-		UpdateColumn("total", gorm.Expr("total + ?", amount)).
-		Error
 }
 
 func (r *reportRepo) GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error) {

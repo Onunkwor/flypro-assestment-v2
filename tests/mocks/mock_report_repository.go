@@ -41,18 +41,18 @@ func (m *MockReportRepository) EXPECT() *MockReportRepositoryMockRecorder {
 	return m.recorder
 }
 
-// AddExpenseToReport mocks base method.
-func (m *MockReportRepository) AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error {
+// AddExpenseToReportWithTotal mocks base method.
+func (m *MockReportRepository) AddExpenseToReportWithTotal(ctx context.Context, reportID uint, expense *models.Expense) error {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AddExpenseToReport", ctx, reportID, expense)
+	ret := m.ctrl.Call(m, "AddExpenseToReportWithTotal", ctx, reportID, expense)
 	ret0, _ := ret[0].(error)
 	return ret0
 }
 
-// AddExpenseToReport indicates an expected call of AddExpenseToReport.
-func (mr *MockReportRepositoryMockRecorder) AddExpenseToReport(ctx, reportID, expense any) *gomock.Call {
+// AddExpenseToReportWithTotal indicates an expected call of AddExpenseToReportWithTotal.
+func (mr *MockReportRepositoryMockRecorder) AddExpenseToReportWithTotal(ctx, reportID, expense any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddExpenseToReport", reflect.TypeOf((*MockReportRepository)(nil).AddExpenseToReport), ctx, reportID, expense)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AddExpenseToReportWithTotal", reflect.TypeOf((*MockReportRepository)(nil).AddExpenseToReportWithTotal), ctx, reportID, expense)
 }
 
 // CreateReport mocks base method.
@@ -97,20 +97,6 @@ func (m *MockReportRepository) GetReportExpenses(ctx context.Context, userID uin
 func (mr *MockReportRepositoryMockRecorder) GetReportExpenses(ctx, userID, offset, limit any) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetReportExpenses", reflect.TypeOf((*MockReportRepository)(nil).GetReportExpenses), ctx, userID, offset, limit)
-}
-
-// IncrementReportTotal mocks base method.
-func (m *MockReportRepository) IncrementReportTotal(ctx context.Context, reportID uint, amount float64) error {
-	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "IncrementReportTotal", ctx, reportID, amount)
-	ret0, _ := ret[0].(error)
-	return ret0
-}
-
-// IncrementReportTotal indicates an expected call of IncrementReportTotal.
-func (mr *MockReportRepositoryMockRecorder) IncrementReportTotal(ctx, reportID, amount any) *gomock.Call {
-	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "IncrementReportTotal", reflect.TypeOf((*MockReportRepository)(nil).IncrementReportTotal), ctx, reportID, amount)
 }
 
 // SubmitReport mocks base method.
