@@ -11,15 +11,19 @@ import (
 	"github.com/onunkwor/flypro-assestment-v2/internal/utils"
 )
 
-type UserHandler struct {
+type UserHandler interface {
+	CreateUser(c *gin.Context)
+	GetUserByID(c *gin.Context)
+}
+type userHandler struct {
 	service services.UserService
 }
 
-func NewUserHandler(service services.UserService) *UserHandler {
-	return &UserHandler{service: service}
+func NewUserHandler(service services.UserService) UserHandler {
+	return &userHandler{service: service}
 }
 
-func (h *UserHandler) CreateUser(c *gin.Context) {
+func (h *userHandler) CreateUser(c *gin.Context) {
 	var request dto.CreateUserRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		formatted := utils.FormatValidationError(err)
@@ -43,7 +47,7 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "User created successfully"})
 }
 
-func (h *UserHandler) GetUserByID(c *gin.Context) {
+func (h *userHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 32)
 	if err != nil {

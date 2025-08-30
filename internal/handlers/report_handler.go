@@ -12,17 +12,23 @@ import (
 	"github.com/onunkwor/flypro-assestment-v2/internal/utils"
 )
 
-type ReportHandler struct {
+type ReportHandler interface {
+	CreateReport(c *gin.Context)
+	AddExpenseToReport(c *gin.Context)
+	SubmitReport(c *gin.Context)
+	GetReportExpenses(c *gin.Context)
+}
+type reportHandler struct {
 	reportService services.ReportService
 }
 
-func NewReportHandler(reportService services.ReportService) *ReportHandler {
-	return &ReportHandler{
+func NewReportHandler(reportService services.ReportService) ReportHandler {
+	return &reportHandler{
 		reportService: reportService,
 	}
 }
 
-func (h *ReportHandler) CreateReport(c *gin.Context) {
+func (h *reportHandler) CreateReport(c *gin.Context) {
 	var request dto.CreateReportRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		formatted := utils.FormatValidationError(err)
@@ -42,7 +48,7 @@ func (h *ReportHandler) CreateReport(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Report created successfully"})
 }
 
-func (h *ReportHandler) AddExpenseToReport(c *gin.Context) {
+func (h *reportHandler) AddExpenseToReport(c *gin.Context) {
 	var request dto.AddExpenseToReportRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		formatted := utils.FormatValidationError(err)
@@ -78,7 +84,7 @@ func (h *ReportHandler) AddExpenseToReport(c *gin.Context) {
 
 }
 
-func (h *ReportHandler) SubmitReport(c *gin.Context) {
+func (h *reportHandler) SubmitReport(c *gin.Context) {
 	reportID, err := strconv.ParseUint(c.Param("reportID"), 10, 64)
 	if err != nil {
 		utils.BadRequestResponse(c, "invalid report ID")
@@ -114,7 +120,7 @@ func (h *ReportHandler) SubmitReport(c *gin.Context) {
 	})
 }
 
-func (h *ReportHandler) GetReportExpenses(c *gin.Context) {
+func (h *reportHandler) GetReportExpenses(c *gin.Context) {
 	userID, err := strconv.ParseUint(c.Query("user_id"), 10, 64)
 	if err != nil || userID == 0 {
 		utils.BadRequestResponse(c, "invalid user ID")

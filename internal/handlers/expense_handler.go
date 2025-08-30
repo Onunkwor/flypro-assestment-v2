@@ -14,15 +14,22 @@ import (
 	"gorm.io/gorm"
 )
 
-type ExpenseHandler struct {
+type ExpenseHandler interface {
+	CreateExpense(c *gin.Context)
+	GetExpenseByID(c *gin.Context)
+	UpdateExpense(c *gin.Context)
+	DeleteExpense(c *gin.Context)
+	GetExpenses(c *gin.Context)
+}
+type expenseHandler struct {
 	service services.ExpenseService
 }
 
-func NewExpenseHandler(service services.ExpenseService) *ExpenseHandler {
-	return &ExpenseHandler{service: service}
+func NewExpenseHandler(service services.ExpenseService) ExpenseHandler {
+	return &expenseHandler{service: service}
 }
 
-func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
+func (h *expenseHandler) CreateExpense(c *gin.Context) {
 	var request dto.CreateExpenseRequest
 	if err := c.ShouldBindJSON(&request); err != nil {
 		formatted := utils.FormatValidationError(err)
@@ -43,7 +50,7 @@ func (h *ExpenseHandler) CreateExpense(c *gin.Context) {
 	c.JSON(http.StatusCreated, gin.H{"message": "Expense created successfully"})
 }
 
-func (h *ExpenseHandler) GetExpenseByID(c *gin.Context) {
+func (h *expenseHandler) GetExpenseByID(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
@@ -64,7 +71,7 @@ func (h *ExpenseHandler) GetExpenseByID(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Expense retrieved successfully", "data": expense})
 }
 
-func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
+func (h *expenseHandler) UpdateExpense(c *gin.Context) {
 	var request dto.UpdateExpenseRequest
 
 	if err := c.ShouldBindJSON(&request); err != nil {
@@ -110,7 +117,7 @@ func (h *ExpenseHandler) UpdateExpense(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Expense updated successfully"})
 }
 
-func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
+func (h *expenseHandler) DeleteExpense(c *gin.Context) {
 	idParam := c.Param("id")
 	id, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
@@ -141,7 +148,7 @@ func (h *ExpenseHandler) DeleteExpense(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"message": "Expense deleted successfully"})
 }
 
-func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
+func (h *expenseHandler) GetExpenses(c *gin.Context) {
 	filters := make(map[string]interface{})
 	if userIDParam := c.Query("user_id"); userIDParam != "" {
 		userID, err := strconv.ParseUint(userIDParam, 10, 64)
