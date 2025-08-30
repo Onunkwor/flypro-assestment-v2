@@ -185,7 +185,9 @@ func (h *ExpenseHandler) GetExpenses(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "Expenses retrieved successfully",
-		"data":    expenses,
+		"data":   expenses,
+		"count":  len(expenses),
+		"offset": offset,
+		"limit":  limit,
 	})
 }
