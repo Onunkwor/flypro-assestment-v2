@@ -49,7 +49,7 @@ func (h *userHandler) CreateUser(c *gin.Context) {
 
 func (h *userHandler) GetUserByID(c *gin.Context) {
 	idParam := c.Param("id")
-	id, err := strconv.ParseUint(idParam, 10, 32)
+	id, err := strconv.ParseUint(idParam, 10, 64)
 	if err != nil {
 		utils.BadRequestResponse(c, "invalid user ID")
 		return
