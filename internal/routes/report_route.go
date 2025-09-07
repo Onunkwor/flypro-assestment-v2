@@ -13,14 +13,30 @@ func RegisterReportRoutes(router *gin.Engine) {
 	reportRepository := repository.NewReportRepository(config.DB)
 	expenseRepository := repository.NewExpenseRepository(config.DB)
 	userRepository := repository.NewUserRepository(config.DB)
-	reportService := services.NewReportService(reportRepository, expenseRepository, userRepository, config.Redis)
+
+	reportService := services.NewReportService(
+		reportRepository,
+		expenseRepository,
+		userRepository,
+		config.Redis,
+	)
+
 	reportHandler := handlers.NewReportHandler(reportService)
 
 	reportRoutes := router.Group("/api/reports")
 	{
 		reportRoutes.POST("/", reportHandler.CreateReport)
-		reportRoutes.POST("/:id/expenses", middleware.ReportOwnershipMiddleware(reportRepository), reportHandler.AddExpenseToReport)
-		reportRoutes.PUT("/:id/submit", middleware.ReportOwnershipMiddleware(reportRepository), reportHandler.SubmitReport)
+		reportRoutes.POST(
+			"/:id/expenses",
+			middleware.ReportOwnershipMiddleware(reportRepository),
+			middleware.ExpenseOwnershipMiddleware(expenseRepository),
+			reportHandler.AddExpenseToReport,
+		)
+		reportRoutes.PUT(
+			"/:id/submit",
+			middleware.ReportOwnershipMiddleware(reportRepository),
+			reportHandler.SubmitReport,
+		)
 		reportRoutes.GET("/", reportHandler.GetReportExpenses)
 	}
 }

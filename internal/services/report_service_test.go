@@ -92,7 +92,7 @@ func TestAddExpenseToReport_Success(t *testing.T) {
 	mockExpenseRepo.EXPECT().GetExpenseByID(gomock.Any(), expenseID).Return(expense, nil)
 	mockReportRepo.EXPECT().AddExpenseToReportWithTotal(gomock.Any(), reportID, expense).Return(nil)
 
-	err := service.AddExpenseToReport(context.Background(), expenseID)
+	err := service.AddExpenseToReport(context.Background(), reportID, expenseID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

@@ -56,11 +56,10 @@ func (h *reportHandler) AddExpenseToReport(c *gin.Context) {
 		return
 	}
 
-	if err := h.reportService.AddExpenseToReport(c.Request.Context(), request.ExpenseID); err != nil {
+	reportID := c.GetUint("reportID")
+
+	if err := h.reportService.AddExpenseToReport(c.Request.Context(), reportID, request.ExpenseID); err != nil {
 		switch err {
-		case services.ErrInvalidOwnership:
-			utils.BadRequestResponse(c, "you do not own this report or expense")
-			return
 		case repository.ErrReportNotFound:
 			utils.NotFoundResponse(c, "report not found")
 			return

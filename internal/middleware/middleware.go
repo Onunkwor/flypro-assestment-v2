@@ -1,10 +1,15 @@
 package middleware
 
 import (
+	"bytes"
+	"encoding/json"
+	"io"
 	"net/http"
+
 	"strconv"
 
 	"github.com/gin-gonic/gin"
+	"github.com/onunkwor/flypro-assestment-v2/internal/dto"
 	"github.com/onunkwor/flypro-assestment-v2/internal/repository"
 	"github.com/onunkwor/flypro-assestment-v2/internal/utils"
 )
@@ -42,6 +47,53 @@ func ReportOwnershipMiddleware(reportRepo repository.ReportRepository) gin.Handl
 
 		c.Set("userID", uint(userID))
 		c.Set("reportID", uint(reportID))
+		c.Next()
+	}
+}
+
+func ExpenseOwnershipMiddleware(expenseRepo repository.ExpenseRepository) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		userIDIf, exists := c.Get("userID")
+		if !exists {
+			utils.ForbiddenResponse(c, "user ID not found in context")
+			c.Abort()
+			return
+		}
+		userID, ok := userIDIf.(uint)
+		if !ok {
+			utils.ForbiddenResponse(c, "invalid user ID in context")
+			c.Abort()
+			return
+		}
+
+		bodyBytes, err := io.ReadAll(c.Request.Body)
+		if err != nil {
+			utils.BadRequestResponse(c, "failed to read request body")
+			c.Abort()
+			return
+		}
+		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
+
+		var request dto.AddExpenseToReportRequest
+		if err := json.Unmarshal(bodyBytes, &request); err != nil {
+			utils.BadRequestResponse(c, "invalid request body")
+			c.Abort()
+			return
+		}
+
+		expense, err := expenseRepo.GetExpenseByID(c.Request.Context(), request.ExpenseID)
+		if err != nil {
+			utils.BadRequestResponse(c, "failed to retrieve expense")
+			c.Abort()
+			return
+		}
+
+		if expense.UserID != userID {
+			utils.ForbiddenResponse(c, "you do not have permission to access this resource")
+			c.Abort()
+			return
+		}
+
 		c.Next()
 	}
 }
