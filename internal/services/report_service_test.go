@@ -92,7 +92,7 @@ func TestAddExpenseToReport_Success(t *testing.T) {
 	mockExpenseRepo.EXPECT().GetExpenseByID(gomock.Any(), expenseID).Return(expense, nil)
 	mockReportRepo.EXPECT().AddExpenseToReportWithTotal(gomock.Any(), reportID, expense).Return(nil)
 
-	err := service.AddExpenseToReport(context.Background(), reportID, userID, expenseID)
+	err := service.AddExpenseToReport(context.Background(), expenseID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}
@@ -112,7 +112,7 @@ func TestSubmitReport_Success(t *testing.T) {
 	mockReportRepo.EXPECT().GetExpenseReportByID(gomock.Any(), reportID).Return(report, nil)
 	mockReportRepo.EXPECT().SubmitReport(gomock.Any(), reportID).Return(nil)
 
-	err := service.SubmitReport(context.Background(), reportID, userID)
+	err := service.SubmitReport(context.Background(), reportID)
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
 	}

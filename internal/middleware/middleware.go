@@ -9,7 +9,7 @@ import (
 	"github.com/onunkwor/flypro-assestment-v2/internal/utils"
 )
 
-func ReturnOwnershipMiddleware(reportRepo repository.ReportRepository) gin.HandlerFunc {
+func ReportOwnershipMiddleware(reportRepo repository.ReportRepository) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		userIDStr := c.Query("userID")
 		reportIDStr := c.Param("id")

@@ -4,6 +4,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/onunkwor/flypro-assestment-v2/internal/config"
 	"github.com/onunkwor/flypro-assestment-v2/internal/handlers"
+	"github.com/onunkwor/flypro-assestment-v2/internal/middleware"
 	"github.com/onunkwor/flypro-assestment-v2/internal/repository"
 	"github.com/onunkwor/flypro-assestment-v2/internal/services"
 )
@@ -18,8 +19,8 @@ func RegisterReportRoutes(router *gin.Engine) {
 	reportRoutes := router.Group("/api/reports")
 	{
 		reportRoutes.POST("/", reportHandler.CreateReport)
-		reportRoutes.POST("/:id/expenses", reportHandler.AddExpenseToReport)
-		reportRoutes.PUT("/:id/submit", reportHandler.SubmitReport)
+		reportRoutes.POST("/:id/expenses", middleware.ReportOwnershipMiddleware(reportRepository), reportHandler.AddExpenseToReport)
+		reportRoutes.PUT("/:id/submit", middleware.ReportOwnershipMiddleware(reportRepository), reportHandler.SubmitReport)
 		reportRoutes.GET("/", reportHandler.GetReportExpenses)
 	}
 }

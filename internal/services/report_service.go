@@ -16,8 +16,8 @@ var (
 
 type ReportService interface {
 	CreateReport(ctx context.Context, report *models.ExpenseReport) error
-	AddExpenseToReport(ctx context.Context, reportID, userId, expenseID uint) error
-	SubmitReport(ctx context.Context, reportID, userID uint) error
+	AddExpenseToReport(ctx context.Context, expenseID uint) error
+	SubmitReport(ctx context.Context, reportID uint) error
 	GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error)
 }
 
@@ -45,21 +45,13 @@ func (s *reportService) CreateReport(ctx context.Context, report *models.Expense
 	return s.reportRepo.CreateReport(ctx, report)
 }
 
-func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID, expenseID uint) error {
-	report, err := s.reportRepo.GetExpenseReportByID(ctx, reportID)
-	if err != nil {
-		return err
-	}
-
-	if report.UserID != userID {
-		return ErrInvalidOwnership
-	}
-
+func (s *reportService) AddExpenseToReport(ctx context.Context, expenseID uint) error {
+	reportID := ctx.Value("reportID").(uint)
+	userID := ctx.Value("userID").(uint)
 	expense, err := s.expenseRepo.GetExpenseByID(ctx, expenseID)
 	if err != nil {
 		return err
 	}
-
 	if expense.UserID != userID {
 		return ErrInvalidOwnership
 	}
@@ -68,20 +60,14 @@ func (s *reportService) AddExpenseToReport(ctx context.Context, reportID, userID
 
 }
 
-func (s *reportService) SubmitReport(ctx context.Context, reportID, userID uint) error {
+func (s *reportService) SubmitReport(ctx context.Context, reportID uint) error {
 	report, err := s.reportRepo.GetExpenseReportByID(ctx, reportID)
 	if err != nil {
 		return err
 	}
-
-	if report.UserID != userID {
-		return ErrInvalidOwnership
-	}
-
 	if report.Status != "draft" {
 		return ErrInvalidReportState
 	}
-
 	return s.reportRepo.SubmitReport(ctx, reportID)
 }
 

@@ -8,7 +8,6 @@ type CreateReportRequest struct {
 }
 
 type AddExpenseToReportRequest struct {
-	UserID    uint `json:"user_id" binding:"required"`
 	ExpenseID uint `json:"expense_id" binding:"required"`
 }
 

@@ -55,13 +55,8 @@ func (h *reportHandler) AddExpenseToReport(c *gin.Context) {
 		utils.ValidationErrorResponse(c, formatted)
 		return
 	}
-	reportID, err := strconv.ParseUint(c.Param("id"), 10, 64)
-	if err != nil {
-		utils.BadRequestResponse(c, "invalid report ID")
-		return
-	}
 
-	if err := h.reportService.AddExpenseToReport(c.Request.Context(), uint(reportID), request.UserID, request.ExpenseID); err != nil {
+	if err := h.reportService.AddExpenseToReport(c.Request.Context(), request.ExpenseID); err != nil {
 		switch err {
 		case services.ErrInvalidOwnership:
 			utils.BadRequestResponse(c, "you do not own this report or expense")
@@ -85,29 +80,13 @@ func (h *reportHandler) AddExpenseToReport(c *gin.Context) {
 }
 
 func (h *reportHandler) SubmitReport(c *gin.Context) {
-	reportID, err := strconv.ParseUint(c.Param("reportID"), 10, 64)
-	if err != nil {
-		utils.BadRequestResponse(c, "invalid report ID")
-		return
-	}
+	reportID := c.GetUint("reportID")
 
-	userID, err := strconv.ParseUint(c.Query("userID"), 10, 64)
-	if err != nil {
-		utils.BadRequestResponse(c, "invalid user ID")
-		return
-	}
-
-	err = h.reportService.SubmitReport(c.Request.Context(), uint(reportID), uint(userID))
+	err := h.reportService.SubmitReport(c.Request.Context(), reportID)
 	if err != nil {
 		switch err {
-		case services.ErrInvalidOwnership:
-			utils.BadRequestResponse(c, "you do not own this report")
-			return
 		case services.ErrInvalidReportState:
 			utils.BadRequestResponse(c, "report cannot be submitted in current state")
-			return
-		case repository.ErrReportNotFound:
-			utils.NotFoundResponse(c, "report not found")
 			return
 		default:
 			utils.InternalServerErrorResponse(c, err)
