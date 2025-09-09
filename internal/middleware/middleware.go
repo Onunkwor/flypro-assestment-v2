@@ -1,9 +1,6 @@
 package middleware
 
 import (
-	"bytes"
-	"encoding/json"
-	"io"
 	"net/http"
 
 	"strconv"
@@ -66,16 +63,8 @@ func ExpenseOwnershipMiddleware(expenseRepo repository.ExpenseRepository) gin.Ha
 			return
 		}
 
-		bodyBytes, err := io.ReadAll(c.Request.Body)
-		if err != nil {
-			utils.BadRequestResponse(c, "failed to read request body")
-			c.Abort()
-			return
-		}
-		c.Request.Body = io.NopCloser(bytes.NewBuffer(bodyBytes))
-
 		var request dto.AddExpenseToReportRequest
-		if err := json.Unmarshal(bodyBytes, &request); err != nil {
+		if err := c.ShouldBindJSON(&request); err != nil {
 			utils.BadRequestResponse(c, "invalid request body")
 			c.Abort()
 			return
@@ -94,6 +83,7 @@ func ExpenseOwnershipMiddleware(expenseRepo repository.ExpenseRepository) gin.Ha
 			return
 		}
 
+		c.Set("expense", expense)
 		c.Next()
 	}
 }

@@ -57,8 +57,8 @@ func (h *reportHandler) AddExpenseToReport(c *gin.Context) {
 	}
 
 	reportID := c.GetUint("reportID")
-
-	if err := h.reportService.AddExpenseToReport(c.Request.Context(), reportID, request.ExpenseID); err != nil {
+	expense := c.MustGet("expense").(*models.Expense)
+	if err := h.reportService.AddExpenseToReport(c.Request.Context(), reportID, expense); err != nil {
 		switch err {
 		case repository.ErrReportNotFound:
 			utils.NotFoundResponse(c, "report not found")

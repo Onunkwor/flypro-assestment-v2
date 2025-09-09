@@ -16,7 +16,7 @@ var (
 
 type ReportService interface {
 	CreateReport(ctx context.Context, report *models.ExpenseReport) error
-	AddExpenseToReport(ctx context.Context, reportID, expenseID uint) error
+	AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error
 	SubmitReport(ctx context.Context, reportID uint) error
 	GetReportExpenses(ctx context.Context, userID uint, offset, limit int) ([]models.ExpenseReport, error)
 }
@@ -45,11 +45,7 @@ func (s *reportService) CreateReport(ctx context.Context, report *models.Expense
 	return s.reportRepo.CreateReport(ctx, report)
 }
 
-func (s *reportService) AddExpenseToReport(ctx context.Context, reportID uint, expenseID uint) error {
-	expense, err := s.expenseRepo.GetExpenseByID(ctx, expenseID)
-	if err != nil {
-		return err
-	}
+func (s *reportService) AddExpenseToReport(ctx context.Context, reportID uint, expense *models.Expense) error {
 
 	return s.reportRepo.AddExpenseToReportWithTotal(ctx, reportID, expense)
 }

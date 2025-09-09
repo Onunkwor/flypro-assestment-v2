@@ -71,30 +71,39 @@ func TestCreateReport_Success(t *testing.T) {
 	}
 }
 
-func TestAddExpenseToReport_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func TestAddExpenseToReport(t *testing.T) {
+	tests := []struct {
+		name        string
+		reportID    uint
+		expense     *models.Expense
+		mockReport  func(repo *mocks.MockReportRepository)
+		expectedErr error
+	}{
+		{
+			name:     "Success",
+			reportID: 1,
+			expense:  &models.Expense{BaseModel: models.BaseModel{ID: 1}, UserID: 1, AmountUSD: 100},
+			mockReport: func(repo *mocks.MockReportRepository) {
+				repo.EXPECT().AddExpenseToReportWithTotal(gomock.Any(), uint(1), gomock.Any()).Return(nil)
+			},
+			expectedErr: nil,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	mockReportRepo := mocks.NewMockReportRepository(ctrl)
-	mockExpenseRepo := mocks.NewMockExpenseRepository(ctrl)
-	mockUserRepo := mocks.NewMockUserRepository(ctrl)
+			mockReportRepo := mocks.NewMockReportRepository(ctrl)
+			service := services.NewReportService(mockReportRepo, nil, nil, nil)
 
-	service := services.NewReportService(mockReportRepo, mockExpenseRepo, mockUserRepo, nil)
+			tt.mockReport(mockReportRepo)
 
-	reportID := uint(1)
-	userID := uint(1)
-	expenseID := uint(10)
-
-	report := &models.ExpenseReport{BaseModel: models.BaseModel{ID: reportID}, UserID: userID, Total: 100}
-	expense := &models.Expense{BaseModel: models.BaseModel{ID: expenseID}, UserID: userID, AmountUSD: 50}
-
-	mockReportRepo.EXPECT().GetExpenseReportByID(gomock.Any(), reportID).Return(report, nil)
-	mockExpenseRepo.EXPECT().GetExpenseByID(gomock.Any(), expenseID).Return(expense, nil)
-	mockReportRepo.EXPECT().AddExpenseToReportWithTotal(gomock.Any(), reportID, expense).Return(nil)
-
-	err := service.AddExpenseToReport(context.Background(), reportID, expenseID)
-	if err != nil {
-		t.Fatalf("expected no error, got %v", err)
+			err := service.AddExpenseToReport(context.Background(), tt.reportID, tt.expense)
+			if !errors.Is(err, tt.expectedErr) {
+				t.Fatalf("expected %v, got %v", tt.expectedErr, err)
+			}
+		})
 	}
 }
 
