@@ -9,6 +9,7 @@ import (
 )
 
 var ErrUserNotFound = errors.New("user not found")
+var ErrDatabase = errors.New("database error")
 
 type userRepo struct {
 	db *gorm.DB

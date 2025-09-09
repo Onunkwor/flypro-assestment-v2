@@ -23,10 +23,10 @@ type UserService interface {
 
 type userSrv struct {
 	repo  repository.UserRepository
-	redis *redis.Client
+	redis RedisClient
 }
 
-func NewUserService(redis *redis.Client, repo repository.UserRepository) UserService {
+func NewUserService(redis RedisClient, repo repository.UserRepository) UserService {
 	return &userSrv{repo: repo, redis: redis}
 }
 

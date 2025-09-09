@@ -25,11 +25,11 @@ type ExpenseService interface {
 
 type expenseSrv struct {
 	repo        repository.ExpenseRepository
-	redis       *redis.Client
+	redis       RedisClient
 	currencySvc CurrencyConverter
 }
 
-func NewExpenseService(redis *redis.Client, currencySvc CurrencyConverter, repo repository.ExpenseRepository) ExpenseService {
+func NewExpenseService(redis RedisClient, currencySvc CurrencyConverter, repo repository.ExpenseRepository) ExpenseService {
 	return &expenseSrv{repo: repo, redis: redis, currencySvc: currencySvc}
 }
 
@@ -43,7 +43,7 @@ func (s *expenseSrv) CreateExpense(ctx context.Context, expense *models.Expense)
 	} else {
 		convertedAmount, rate, err := s.currencySvc.Convert(ctx, expense.Amount, currency, "USD")
 		if err != nil {
-			return err
+			return ErrCurrencyConversionFailed
 		}
 		expense.AmountUSD = convertedAmount
 		expense.ExchangeRate = rate

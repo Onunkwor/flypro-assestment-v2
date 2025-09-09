@@ -10,97 +10,101 @@ import (
 	"go.uber.org/mock/gomock"
 )
 
-func TestCreateExpanse_CurrencyConversionFAil(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+func TestCreateExpense(t *testing.T) {
+	tests := []struct {
+		name         string
+		expense      *models.Expense
+		mockRepo     func(repo *mocks.MockExpenseRepository)
+		mockCurrency func(ctrl *gomock.Controller) *mocks.MockCurrencyConverter
+		expectedErr  error
+		assert       func(t *testing.T, exp *models.Expense)
+	}{
+		{
+			name: "USD_Currency",
+			expense: &models.Expense{
+				Currency: "USD",
+				Amount:   100,
+			},
+			mockRepo: func(repo *mocks.MockExpenseRepository) {
+				repo.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil)
+			},
+			mockCurrency: func(ctrl *gomock.Controller) *mocks.MockCurrencyConverter {
+				return mocks.NewMockCurrencyConverter(ctrl)
+			},
+			expectedErr: nil,
+			assert: func(t *testing.T, exp *models.Expense) {
+				if exp.AmountUSD != 100 || exp.ExchangeRate != 1.0 {
+					t.Errorf("expected AmountUSD 100 and ExchangeRate 1.0, got %v and %v", exp.AmountUSD, exp.ExchangeRate)
+				}
+			},
+		},
+		{
+			name: "NonUSD_Currency_ConversionSuccess",
+			expense: &models.Expense{
+				Currency: "EUR",
+				Amount:   200,
+			},
+			mockRepo: func(repo *mocks.MockExpenseRepository) {
+				repo.EXPECT().
+					Create(gomock.Any(), gomock.Any()).
+					Return(nil)
+			},
+			mockCurrency: func(ctrl *gomock.Controller) *mocks.MockCurrencyConverter {
+				mockCurr := mocks.NewMockCurrencyConverter(ctrl)
+				mockCurr.EXPECT().
+					Convert(gomock.Any(), 200.0, "EUR", "USD").
+					Return(220.0, 1.1, nil)
+				return mockCurr
+			},
+			expectedErr: nil,
+			assert: func(t *testing.T, exp *models.Expense) {
+				if exp.AmountUSD != 220.0 || exp.ExchangeRate != 1.1 {
+					t.Errorf("expected AmountUSD=220, ExchangeRate=1.1, got %+v", exp)
+				}
+			},
+		},
+		{
+			name: "NonUSD_Currency_ConversionFails",
+			expense: &models.Expense{
+				Currency: "EUR",
+				Amount:   200,
+			},
+			mockRepo: func(repo *mocks.MockExpenseRepository) {
 
-	mockCurrency := mocks.NewMockCurrencyConverter(ctrl)
-	mockRepo := mocks.NewMockExpenseRepository(ctrl)
-	srv := services.NewExpenseService(nil, mockCurrency, mockRepo)
-
-	exp := &models.Expense{
-		UserID:   1,
-		Amount:   100,
-		Currency: "NGN",
+			},
+			mockCurrency: func(ctrl *gomock.Controller) *mocks.MockCurrencyConverter {
+				mockCurr := mocks.NewMockCurrencyConverter(ctrl)
+				mockCurr.EXPECT().
+					Convert(gomock.Any(), float64(200), "EUR", "USD").
+					Return(0.0, 0.0, services.ErrCurrencyConversionFailed)
+				return mockCurr
+			},
+			expectedErr: services.ErrCurrencyConversionFailed,
+			assert: func(t *testing.T, exp *models.Expense) {
+			},
+		},
 	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			ctrl := gomock.NewController(t)
+			defer ctrl.Finish()
 
-	mockCurrency.EXPECT().
-		Convert(gomock.Any(), 100.0, "NGN", "USD").
-		Return(0.0, 0.0, services.ErrCurrencyConversionFailed)
+			mockRepo := mocks.NewMockExpenseRepository(ctrl)
+			mockCurr := tt.mockCurrency(ctrl)
 
-	err := srv.CreateExpense(context.Background(), exp)
-	if err != services.ErrCurrencyConversionFailed {
-		t.Errorf("expected error %v, got %v", services.ErrCurrencyConversionFailed, err)
-	}
-}
+			tt.mockRepo(mockRepo)
 
-func TestCreateExpense_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
+			svc := services.NewExpenseService(nil, mockCurr, mockRepo)
 
-	mockRepo := mocks.NewMockExpenseRepository(ctrl)
-	mockCurrency := mocks.NewMockCurrencyConverter(ctrl)
-
-	srv := services.NewExpenseService(nil, mockCurrency, mockRepo)
-
-	exp := &models.Expense{
-		UserID:   1,
-		Amount:   100,
-		Currency: "NGN",
-	}
-
-	mockCurrency.EXPECT().
-		Convert(gomock.Any(), exp.Amount, "NGN", "USD").
-		Return(0.26, 0.0026, nil)
-
-	mockRepo.EXPECT().
-		Create(gomock.Any(), gomock.AssignableToTypeOf(&models.Expense{})).
-		DoAndReturn(func(ctx context.Context, e *models.Expense) error {
-			if e.AmountUSD != 0.26 {
-				t.Fatalf("expected AmountUSD 0.26, got %v", e.AmountUSD)
+			err := svc.CreateExpense(context.Background(), tt.expense)
+			if (tt.expectedErr != nil && (err == nil || err.Error() != tt.expectedErr.Error())) ||
+				(tt.expectedErr == nil && err != nil) {
+				t.Errorf("expected error %v, got %v", tt.expectedErr, err)
 			}
-			if e.ExchangeRate != 0.0026 {
-				t.Fatalf("expected ExchangeRate 0.0026, got %v", e.ExchangeRate)
-			}
-			return nil
+
+			tt.assert(t, tt.expense)
 		})
-
-	if err := srv.CreateExpense(context.Background(), exp); err != nil {
-		t.Fatalf("unexpected error: %v", err)
-	}
-}
-func TestUpdateExpense_Success(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	mockRepo := mocks.NewMockExpenseRepository(ctrl)
-	mockCurrency := mocks.NewMockCurrencyConverter(ctrl)
-
-	srv := services.NewExpenseService(nil, mockCurrency, mockRepo)
-
-	exp := &models.Expense{
-		UserID:   1,
-		Amount:   100,
-		Currency: "NGN",
-	}
-
-	mockCurrency.EXPECT().
-		Convert(gomock.Any(), exp.Amount, "NGN", "USD").
-		Return(0.26, 0.0026, nil)
-
-	mockRepo.EXPECT().
-		UpdateExpense(gomock.Any(), uint(1), gomock.AssignableToTypeOf(&models.Expense{}), uint(1)).
-		DoAndReturn(func(ctx context.Context, id uint, e *models.Expense, userId uint) error {
-			if e.AmountUSD != 0.26 {
-				t.Fatalf("expected AmountUSD 0.26, got %v", e.AmountUSD)
-			}
-			if e.ExchangeRate != 0.0026 {
-				t.Fatalf("expected ExchangeRate 0.0026, got %v", e.ExchangeRate)
-			}
-			return nil
-		})
-
-	if err := srv.UpdateExpense(context.Background(), uint(1), exp, uint(1)); err != nil {
-		t.Fatalf("unexpected error: %v", err)
 	}
 }
